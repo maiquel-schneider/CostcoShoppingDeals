@@ -1,0 +1,11 @@
+C:\Users\maiqu\OneDrive\Documents\Visual Studio 2022\CostcoShoppingDeals\CostcoDeals.Shared\bin\Debug\net9.0\CostcoDeals.Shared.deps.json
+C:\Users\maiqu\OneDrive\Documents\Visual Studio 2022\CostcoShoppingDeals\CostcoDeals.Shared\bin\Debug\net9.0\CostcoDeals.Shared.dll
+C:\Users\maiqu\OneDrive\Documents\Visual Studio 2022\CostcoShoppingDeals\CostcoDeals.Shared\bin\Debug\net9.0\CostcoDeals.Shared.pdb
+C:\Users\maiqu\OneDrive\Documents\Visual Studio 2022\CostcoShoppingDeals\CostcoDeals.Shared\obj\Debug\net9.0\CostcoDeals.Shared.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\maiqu\OneDrive\Documents\Visual Studio 2022\CostcoShoppingDeals\CostcoDeals.Shared\obj\Debug\net9.0\CostcoDeals.Shared.AssemblyInfoInputs.cache
+C:\Users\maiqu\OneDrive\Documents\Visual Studio 2022\CostcoShoppingDeals\CostcoDeals.Shared\obj\Debug\net9.0\CostcoDeals.Shared.AssemblyInfo.cs
+C:\Users\maiqu\OneDrive\Documents\Visual Studio 2022\CostcoShoppingDeals\CostcoDeals.Shared\obj\Debug\net9.0\CostcoDeals.Shared.csproj.CoreCompileInputs.cache
+C:\Users\maiqu\OneDrive\Documents\Visual Studio 2022\CostcoShoppingDeals\CostcoDeals.Shared\obj\Debug\net9.0\CostcoDeals.Shared.dll
+C:\Users\maiqu\OneDrive\Documents\Visual Studio 2022\CostcoShoppingDeals\CostcoDeals.Shared\obj\Debug\net9.0\refint\CostcoDeals.Shared.dll
+C:\Users\maiqu\OneDrive\Documents\Visual Studio 2022\CostcoShoppingDeals\CostcoDeals.Shared\obj\Debug\net9.0\CostcoDeals.Shared.pdb
+C:\Users\maiqu\OneDrive\Documents\Visual Studio 2022\CostcoShoppingDeals\CostcoDeals.Shared\obj\Debug\net9.0\ref\CostcoDeals.Shared.dll

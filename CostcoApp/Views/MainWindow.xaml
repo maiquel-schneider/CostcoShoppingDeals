@@ -1,0 +1,319 @@
+﻿<Window x:Class="CostcoApp.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:CostcoApp.ViewModels"
+        xmlns:conv="clr-namespace:CostcoApp.Converters"
+        Title="Costco Deals App" Height="700" Width="1100">
+
+    <Window.Resources>
+        <conv:EnumDescriptionConverter x:Key="EnumDescConverter"/>
+        <!-- add the built-in BooleanToVisibilityConverter -->
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <!-- add an inverse boolean converter, see below -->
+        <conv:InverseBoolConverter x:Key="InverseBoolConverter"/>
+        <Style x:Key="SingleClickComboBox" TargetType="ComboBox">
+            <Setter Property="Cursor" Value="Hand"/>
+            <EventSetter Event="PreviewMouseLeftButtonDown"
+                   Handler="ComboBox_PreviewMouseLeftButtonDown"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <TabControl>
+            <!-- SCRAPE TAB -->
+            <TabItem Header="Products">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/> <!-- 0: controls -->
+                        <RowDefinition Height="Auto"/> <!-- 1: primary progress -->
+                        <RowDefinition Height="Auto"/> <!-- 2: secondary progress -->
+                        <RowDefinition Height="Auto"/> <!-- 3: filters -->
+                        <RowDefinition Height="*"/> <!-- 4: grid -->
+                    </Grid.RowDefinitions>
+
+                    <!-- Top controls -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10">
+                        <TextBlock Text="Location:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                        <ComboBox Width="250"
+                                  ItemsSource="{Binding WarehouseList}"
+                                  SelectedItem="{Binding SelectedWarehouse, Mode=TwoWay}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Converter={StaticResource EnumDescConverter}}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+
+                        <Button Content="Get Warehouse Deals"
+                    Command="{Binding ScrapeCommand}"
+                    Width="150"
+                    Margin="20,0,0,0"
+                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"/>
+                    </StackPanel>
+
+                    <!-- Primary Progress bar (Scrolling Deals) -->
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="10" VerticalAlignment="Center" >
+                        <!-- Live progress text -->
+                        <TextBlock Text="{Binding ProgressText}"
+                                   Width="160"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,10,0"
+                                   Foreground="DarkGreen"
+                                   FontWeight="Bold"
+                                   Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}"/>
+                        <!-- Progress bar, only during IsBusy -->
+                        <ProgressBar Width="200" Height="20"
+                                     Minimum="0" Maximum="100"
+                                     Value="{Binding Progress, Mode=OneWay}"
+                                     Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}"/>
+                        <!-- Final summary, only when not IsBusy -->
+                        <TextBlock Text="{Binding SummaryText}"
+                                   VerticalAlignment="Center"
+                                   Foreground="DarkSlateGray"
+                                   FontStyle="Italic"
+                                   FontSize="12"
+                                   Visibility="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"/>
+                    </StackPanel>
+                    <!-- Secondary Progress bar (History) -->
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="10" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding HistoryText}"
+                                   Width="160"
+                                   Margin="0,0,10,0"
+                                   Foreground="DarkOrange"
+                                   FontWeight="Bold"
+                                   Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}"/>
+                        <ProgressBar Width="200" Height="20"
+                                     Minimum="0" Maximum="100"
+                                     Value="{Binding HistoryProgress, Mode=OneWay}"
+                                     Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}"/> 
+                    </StackPanel>
+                    <!-- Filters -->
+                    <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="10">
+                        <TextBox Width="200"
+                                 Text="{Binding NameFilter, UpdateSourceTrigger=PropertyChanged}"/>
+                        <ComboBox Width="150"
+                                  Style="{StaticResource SingleClickComboBox}"
+                                  ItemsSource="{Binding CategoryFilterList}"
+                                  DisplayMemberPath="Value"
+                                  SelectedValuePath="Key"
+                                  SelectedValue="{Binding SelectedCategoryFilter, Mode=TwoWay}">
+                        </ComboBox>
+                        <ComboBox Width="150"
+                                  Style="{StaticResource SingleClickComboBox}"
+                                  ItemsSource="{Binding PreferenceFilterList}"
+                                  DisplayMemberPath="Value"
+                                  SelectedValuePath="Key"
+                                  SelectedValue="{Binding SelectedPreferenceFilter, Mode=TwoWay}">
+                        </ComboBox>
+                    </StackPanel>
+
+                    <!-- DataGrid -->
+                    <DataGrid Grid.Row="4"
+                              CanUserSortColumns="True"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              Margin="10"
+                              ItemsSource="{Binding ProductsView}" 
+                              ScrollViewer.VerticalScrollBarVisibility="Auto"
+                              ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                              IsReadOnly="False">
+                        <!-- Row coloring by Preference -->
+                        <DataGrid.RowStyle>
+                            <Style TargetType="DataGridRow">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Preference}" Value="NeverBuy">
+                                        <Setter Property="Background" Value="LightPink"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Preference}" Value="OnlyIfHugeSale">
+                                        <Setter Property="Background" Value="Moccasin"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Preference}" Value="SometimesBuy">
+                                        <Setter Property="Background" Value="LightYellow"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Preference}" Value="UsuallyBuy">
+                                        <Setter Property="Background" Value="LightBlue"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Preference}" Value="AlwaysBuy">
+                                        <Setter Property="Background" Value="LightGreen"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGrid.RowStyle>
+
+                        <DataGrid.Columns>
+                            <!-- Image -->
+                            <DataGridTemplateColumn Header="Image" Width="190">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Grid Width="200" Height="200">
+                                            <Image Source="{Binding ImageUrl}"
+                                               Cursor="Hand"
+                                               MouseDown="DataGridImage_MouseDown"/>
+                                            <Border x:Name="AlertOverlay"
+                                                    Background="#88000000"
+                                                    Visibility="Collapsed"
+                                                    CornerRadius="4"/>
+                                            <StackPanel x:Name="AlertContent"
+                                                        Orientation="Vertical"
+                                                        Visibility="Collapsed"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center">
+                                                <Image x:Name="AlertIcon"
+                                                       Width="75" Height="75"
+                                                       Source="/Assets/alert-icon.png"/>
+                                                <!-- swap based on type -->
+                                                <TextBlock x:Name="AlertLabel"
+                                                           Text="{Binding AlertText}"
+                                                           Foreground="GreenYellow"
+                                                           FontWeight="Bold"
+                                                           FontSize="14"
+                                                           TextWrapping="Wrap"
+                                                           TextAlignment="Center"
+                                                           xml:space="preserve"/>
+                                            </StackPanel>
+                                        </Grid>
+                                        <DataTemplate.Triggers>
+                                            <!-- Show overlay + content whenever AlertType != None -->
+                                            <DataTrigger Binding="{Binding AlertType}" Value="None">
+                                                <Setter TargetName="AlertOverlay" Property="Visibility" Value="Collapsed"/>
+                                                <Setter TargetName="AlertContent" Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding AlertType}" Value="Increased">
+                                                <Setter TargetName="AlertOverlay" Property="Visibility" Value="Visible"/>
+                                                <Setter TargetName="AlertContent" Property="Visibility" Value="Visible"/>
+                                                <Setter TargetName="AlertIcon" Property="Source" Value="/CostcoApp;component/Assets/warningup.png"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding AlertType}" Value="Decreased">
+                                                <Setter TargetName="AlertOverlay" Property="Visibility" Value="Visible"/>
+                                                <Setter TargetName="AlertContent" Property="Visibility" Value="Visible"/>
+                                                <Setter TargetName="AlertIcon" Property="Source" Value="/CostcoApp;component/Assets/dealdown.png"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding AlertType}" Value="HotDeal">
+                                                <Setter TargetName="AlertOverlay" Property="Visibility" Value="Visible"/>
+                                                <Setter TargetName="AlertContent" Property="Visibility" Value="Visible"/>
+                                                <Setter TargetName="AlertIcon" Property="Source" Value="/CostcoApp;component/Assets/fire.png"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding AlertType}" Value="AllTimeLow">
+                                                <Setter TargetName="AlertOverlay" Property="Visibility" Value="Visible"/>
+                                                <Setter TargetName="AlertContent" Property="Visibility" Value="Visible"/>
+                                                <Setter TargetName="AlertIcon" Property="Source" Value="/CostcoApp;component/Assets/trophy.png"/>
+                                            </DataTrigger>
+                                        </DataTemplate.Triggers>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- Name -->
+                            <DataGridTextColumn Header="Name"
+                                  Binding="{Binding Name}"
+                                  Width="*"
+                                  IsReadOnly="True"/>
+
+                            <!-- Transient scraped prices (read-only) -->
+                            <DataGridTextColumn Header="Full Price"
+                                  Binding="{Binding FullPrice}"
+                                  Width="80"
+                                  IsReadOnly="True"/>
+                            <DataGridTextColumn Header="Discount"
+                                  Binding="{Binding Discount}"
+                                  Width="80"
+                                  IsReadOnly="True"/>
+                            <DataGridTextColumn Header="Final Price"
+                                  Binding="{Binding FinalPrice}"
+                                  Width="80"
+                                  IsReadOnly="True"/>
+
+                            <!-- Last price from history -->
+                            <DataGridTextColumn Header="Last Price Found"
+                                  Binding="{Binding LastPriceFound}"
+                                  Width="100"
+                                  IsReadOnly="True"/>
+
+                            <!-- Category -->
+                            <DataGridTemplateColumn Header="Category" Width="130"
+                                                    SortMemberPath="Category">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Category, Converter={StaticResource EnumDescConverter}}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                                <DataGridTemplateColumn.CellEditingTemplate>
+                                    <DataTemplate>
+                                        <ComboBox Style="{StaticResource SingleClickComboBox}"
+                                                  ItemsSource="{x:Static vm:UIProductViewModel.SortedCategories}"
+                                                  SelectedValue="{Binding Category, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                  DisplayMemberPath="Value"
+                                                  SelectedValuePath="Key"
+                                                  Focusable="False"
+                                                  Cursor="Hand"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellEditingTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- Preference -->
+                            <DataGridTemplateColumn Header="Preference" Width="100"
+                                                    SortMemberPath="Preference">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Preference, Converter={StaticResource EnumDescConverter}}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                                <DataGridTemplateColumn.CellEditingTemplate>
+                                    <DataTemplate>
+                                        <ComboBox Style="{StaticResource SingleClickComboBox}"
+                                                  ItemsSource="{x:Static vm:UIProductViewModel.SortedPreferences}"
+                                                  SelectedValue="{Binding Preference, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                  DisplayMemberPath="Value"
+                                                  SelectedValuePath="Key"
+                                                  Focusable="False"
+                                                  Cursor="Hand"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellEditingTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- Add to list -->
+                            <DataGridTemplateColumn Header="Add to List" Width="100">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox IsChecked="{Binding IsInShoppingList, Mode=TwoWay}"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"
+                                                  Focusable="False"
+                                                  Cursor="Hand"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+
+            <!-- SHOPPING LIST TAB -->
+            <TabItem Header="Shopping List">
+                <DataGrid AutoGenerateColumns="False"
+                  Margin="10"
+                  ItemsSource="{Binding ShoppingList}"
+                  IsReadOnly="True">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="300"/>
+                        <DataGridTextColumn Header="Final Price" Binding="{Binding FinalPrice}" Width="150"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+        </TabControl>
+
+        <!-- IMAGE OVERLAY -->
+        <Grid x:Name="ImageOverlay"
+          Background="#AA000000"
+          Visibility="Collapsed"
+          MouseDown="ImageOverlay_MouseDown"
+          Panel.ZIndex="999">
+            <Image x:Name="EnlargedImage"
+             Width="400" Height="400"
+             Stretch="Uniform"
+             HorizontalAlignment="Center"
+             VerticalAlignment="Center"
+             Margin="20"/>
+        </Grid>
+    </Grid>
+</Window>
