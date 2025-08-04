@@ -40,6 +40,7 @@ namespace CostcoApp.ViewModels
         }
 
         public ICommand ScrapeCommand { get; }
+        public ICommand AddNewLineCommand { get; }
 
         // 1) Warehouse picker
         public IEnumerable<WarehouseLocation> WarehouseList { get; }
@@ -195,6 +196,26 @@ namespace CostcoApp.ViewModels
 
             ScrapeCommand = new RelayCommand(async _ => await RunScrapeAsync(),
                                              _ => !IsBusy);
+            AddNewLineCommand = new RelayCommand(_ =>
+            {
+                // create a blank VM row; note Name/FinalPrice are now editable
+                var blank = new UIProductViewModel(
+                    id: 0,
+                    costcoId: "",
+                    name: "",
+                    fullPrice: "",
+                    discount: "",
+                    finalPrice: "",
+                    lastPriceFound: "",
+                    imageUrl: "",
+                    category: ProductCategory.Unknown,
+                    preference: Preference.None,
+                    isInShoppingList: false
+                );
+                // add it to the shopping tab
+                ShoppingList.Add(blank);
+            });
+
         }
 
         private bool _isBusy;

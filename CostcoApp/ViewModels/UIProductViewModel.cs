@@ -12,18 +12,28 @@ namespace CostcoApp.ViewModels
     /// <summary>
     /// ViewModel representing one Product row in the DataGrid.
     /// </summary>
-    public class UIProductViewModel : INotifyPropertyChanged
+    public class UIProductViewModel : ViewModelBase
     {
         // Immutable core fields
         public int Id { get; }
         public string CostcoId { get; }
-        public string Name { get; }
+        private string _name;
+        public string Name
+        {
+            get => _name;
+            set => SetField(ref _name, value);
+        }
         public string ImageUrl { get; }
 
         // Latest‐scrape values (writable if needed)
         public string FullPrice { get; set; }
         public string Discount { get; set; }
-        public string FinalPrice { get; set; }
+        private string _finalPrice;
+        public string FinalPrice
+        {
+            get => _finalPrice;
+            set => SetField(ref _finalPrice, value);
+        }
         public string LastPriceFound { get; set; }
 
         // Persistent settings
@@ -160,95 +170,5 @@ namespace CostcoApp.ViewModels
                 evt?.Invoke(this, newValue);
             }
         }
-
-        // **This last price were also removed
-        //private decimal? _lastPrice;
-        ///// <summary>Most recent price, for display only.</summary>
-        //public decimal? LastPrice
-        //{
-        //    get => _lastPrice;
-        //    set => SetField(ref _lastPrice, value);
-        //}
-
-        //**Puyblic Category code is different**
-        //public ProductCategory Category
-        //{
-        //    get => _category;
-        //    set
-        //    {
-        //        if (_category != value)
-        //        {
-        //            _category = value;
-        //            OnPropertyChanged();
-        //            CategoryChanged?.Invoke(this, _category);
-        //        }
-        //    }
-        //}
-        //**Public Preference code is different**
-        //public Preference Preference
-        //{
-        //    get => _preference;
-        //    set
-        //    {
-        //        if (_preference != value)
-        //        {
-        //            _preference = value;
-        //            OnPropertyChanged();
-        //            PreferenceChanged?.Invoke(this, _preference);
-        //        }
-        //    }
-        //}
-        // ** IsInShoppingList code is different
-        //public bool IsInShoppingList
-        //{
-        //    get => _isInShoppingList;
-        //    set
-        //    {
-        //        if (_isInShoppingList != value)
-        //        {
-        //            _isInShoppingList = value;
-        //            Console.WriteLine($"🔁 IsInShoppingList changed to {_isInShoppingList} for {Name}");
-        //            OnPropertyChanged();
-        //            ShoppingListToggled?.Invoke(this, _isInShoppingList);
-        //        }
-        //    }
-        //}
-
-
-        //** Those 2 lines were removed
-        //private IReadOnlyList<decimal> _allPrices;
-        //private decimal? _previousPrice;
-
-        
-
-        // ** Static lists for your filter & in-row ComboBoxes have a slightly different code:
-        //public static List<KeyValuePair<ProductCategory, string>> SortedCategories { get; } =
-        //    Enum.GetValues(typeof(ProductCategory))
-        //    .Cast<ProductCategory>()
-        //    .Select(cat => new KeyValuePair<ProductCategory, string>(cat, EnumHelper.GetDescription(cat)))
-        //    .OrderBy(kv => kv.Value)
-        //    .ToList();
-
-        //public static List<KeyValuePair<Preference, string>> SortedPreferences { get; } =
-        //    Enum.GetValues(typeof(Preference))
-        //    .Cast<Preference>()
-        //    .Select(p => new KeyValuePair<Preference, string>(p, EnumHelper.GetDescription(p)))
-        //    .ToList();
-
-        /// <summary>
-        /// Helper to set a field and raise PropertyChanged.
-        /// </summary>
-        
-        //** This method was change to the SetAndRaise
-        //protected void SetField<T>(ref T field, T value, [CallerMemberName] string? propName = null)
-        //{
-        //    if (!EqualityComparer<T>.Default.Equals(field, value))
-        //    {
-        //        field = value;
-        //        OnPropertyChanged(propName);
-        //    }
-        //}
-
-        
     }
 }
