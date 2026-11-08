@@ -157,9 +157,25 @@ namespace CostcoDeals.Services
             historyProgress?.Report(100);
             _log.LogInformation("=== Workflow complete: database updated ===");
 
-            await _scraper.CloseAsync();
-
-            return _scraper.LastUpdateText;
+            try
+            {
+                await _scraper.CloseAsync();
+            }
+            catch (Exception exClose)
+            {
+                _log.LogWarning(exClose, "Scraper.CloseAsync threw while closing - continuing.");
+            }
+            try
+            {
+                var last = _scraper.LastUpdateText;
+                _log.LogInformation("Returning LastUpdateText: {Last}", last ?? "<null>");
+                return last;
+            }
+            catch (Exception exReturn)
+            {
+                _log.LogError(exReturn, "Exception while reading _scraper.LastUpdateText in RunAsync - returning null");
+                return null;
+            }
         }
     }
 }

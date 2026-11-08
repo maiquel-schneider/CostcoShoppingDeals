@@ -127,22 +127,29 @@ namespace CostcoApp.ViewModels
             var previous = prices[^2];
             var current = prices[^1];
 
+            if (previous == 0m)
+            {
+                // Skip percentage/drop computation
+                SetAlert(PriceAlertType.None, string.Empty);
+                return;
+            }
+
             // 2) If price has raised from previous time
             if (current > previous)
                 SetAlert(PriceAlertType.Increased, "⚠ Price has gone up");
-            // 3) If price has dropped or dropped more than 20%
-            else
-            {
-                var drop = (previous - current) / previous;
-                if (drop >= 0.20m)
-                    SetAlert(PriceAlertType.HotDeal, $"🔥 Hot deal!{Environment.NewLine}{(previous - current) / previous:P2} Cheaper!");  
-                else if (drop > 0)
-                    SetAlert(PriceAlertType.Decreased, "✔ Price has gone down");
+                // 3) If price has dropped or dropped more than 20%
                 else
                 {
-                    SetAlert(PriceAlertType.None, string.Empty);
+                    var drop = (previous - current) / previous;
+                    if (drop >= 0.20m)
+                        SetAlert(PriceAlertType.HotDeal, $"🔥 Hot deal!{Environment.NewLine}{(previous - current) / previous:P2} Cheaper!");  
+                    else if (drop > 0)
+                        SetAlert(PriceAlertType.Decreased, "✔ Price has gone down");
+                    else
+                    {
+                        SetAlert(PriceAlertType.None, string.Empty);
+                    }
                 }
-            }
             // 4) If price is an All-Time-Low considering at least 4 entries
             if (prices.Count >= 4 && current < prices.Min())
                 SetAlert(PriceAlertType.AllTimeLow, $"🏆 All-time low!{Environment.NewLine}Based on {prices.Count} deals!");

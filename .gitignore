@@ -1,1 +1,9 @@
+# ignore Visual Studio workspace cache
 .vs/
+
+# ignore build outputs
+**/bin/
+**/obj/
+
+# ignore Playwright’s bundled browsers & node  
+**/.playwright/

@@ -68,6 +68,7 @@ namespace CostcoDeals
                 // Run the core workflow with the chosen warehouse
                 var manager = host.Services.GetRequiredService<ProductManager>();
                 await manager.RunAsync(warehouse, progress);
+                logger.LogInformation("=== Workflow complete: 3 ===");
 
                 Console.WriteLine();  // finish the progress line
                 logger.LogInformation("=== CostcoDeals completed successfully ===");

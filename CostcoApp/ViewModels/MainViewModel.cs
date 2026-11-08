@@ -27,7 +27,7 @@ namespace CostcoApp.ViewModels
         private readonly ProductManager _manager;
         private readonly MainDatabase _db;
         private readonly IScraperService _scraper;
-
+        private readonly ILogger<MainViewModel> _log;
 
         public ObservableCollection<UIProductViewModel> Products { get; }
             = new ObservableCollection<UIProductViewModel>();
@@ -133,11 +133,12 @@ namespace CostcoApp.ViewModels
             private set => SetField(ref _summaryText, value);
         }
 
-        public MainViewModel(ProductManager manager, MainDatabase db, IScraperService scraper)
+        public MainViewModel(ProductManager manager, MainDatabase db, IScraperService scraper, ILogger<MainViewModel> log)
         {
             _manager = manager;
             _db = db;
             _scraper = scraper;
+            _log = log;
 
             // Populate the warehouse list from the enum
             WarehouseList = Enum.GetValues<WarehouseLocation>();
@@ -349,10 +350,22 @@ namespace CostcoApp.ViewModels
 
             try
             {
+                _log.LogInformation("Check Page Update");
                 var pageUpdate = await _manager.RunAsync(SelectedWarehouse, progressReporter,historyReporter);
+                _log.LogInformation("Confirm Run Async finished");
                 LastUpdateText = pageUpdate ?? "Last update not available";
+                _log.LogInformation("Last update not available");
                 _lastScraped = _manager.LastScrapedProducts;
-                LoadProductsFromLastScrape();
+                _log.LogInformation("LoadProductsFromLastScrape");
+                try
+                {
+                    LoadProductsFromLastScrape();
+                }
+                catch (Exception exLoad)
+                {
+                    _log.LogError(exLoad, "LoadProductsFromLastScrape threw an exception");
+                    throw; // rethrow so outer catch shows the full failure (or remove throw and set friendly message)
+                }
                 try
                 {
                     var json = JsonSerializer.Serialize(_lastScraped);
